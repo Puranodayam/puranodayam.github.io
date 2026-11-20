@@ -7,6 +7,7 @@
   var API = String(C.API_URL || '').trim();
   var PAGE_URL = location.origin + location.pathname;
   var FEED_KEY = 'pv_ann_v2';
+  var OFFICIAL = 'puranodayam.github.io'; // the real address - shown so sponsors can spot a fake copy of this page
   var feed = null;
 
   // ---------------------------------------------------------------- helpers
@@ -49,11 +50,14 @@
 
   // ---------------------------------------------------------------- visit count (shows in the Daily report)
   function logVisit() {
-    if (!API || getItem('sessionStorage', 'pv_scan_annadanam')) return;
-    setItem('sessionStorage', 'pv_scan_annadanam', '1');
+    // ?s=ann-a5 / ann-sticker / ann-mobile from the annadanam QR stickers; plain visits count as "annadanam"
+    var tag = String(new URLSearchParams(location.search).get('s') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20);
+    var src = /^ann-/.test(tag) ? tag : 'annadanam';
+    if (!API || getItem('sessionStorage', 'pv_scan_' + src)) return;
+    setItem('sessionStorage', 'pv_scan_' + src, '1');
     var isNew = getItem('localStorage', 'pv_seen') ? '0' : '1';
     setItem('localStorage', 'pv_seen', String(Date.now()));
-    try { fetch(API + '?action=scan&s=annadanam&n=' + isNew, { mode: 'no-cors' }).catch(function () {}); } catch (e) { /* old browser */ }
+    try { fetch(API + '?action=scan&s=' + encodeURIComponent(src) + '&n=' + isNew, { mode: 'no-cors' }).catch(function () {}); } catch (e) { /* old browser */ }
   }
 
   // ---------------------------------------------------------------- rendering
@@ -242,6 +246,7 @@
     pay: 'చెల్లింపు ఎప్పుడో ఎంచుకోండి. · Please choose when you will pay.',
     choose: 'పేరు చూపించాలా వద్దా ఎంచుకోండి. · Please choose Yes or No.',
     busy: 'కొద్దిసేపు ఆగి మళ్ళీ ప్రయత్నించండి. · Please try again in a minute.',
+    limit: 'ఈ ఫోన్ నంబర్‌తో ఈరోజు ఇప్పటికే 3 బుకింగ్‌లు చేశారు. రేపు మళ్ళీ ప్రయత్నించండి. · This phone already made 3 bookings today.',
     net: 'నెట్‌వర్క్ సమస్య - మళ్ళీ ప్రయత్నించండి. · Network problem, please try again.',
     off: 'ఈ పేజీ ఇంకా సిద్ధం కాలేదు. · This page is not ready yet.'
   };
@@ -276,6 +281,7 @@
     } else if (res.pay) {
       var pay = el('div', 'pay');
       pay.appendChild(el('b', null, '💳 ఇప్పుడు చెల్లించండి: నేరుగా క్యాటరర్‌కు · Pay the caterer'));
+      pay.appendChild(el('p', 'tiny', '✅ చెల్లించే ముందు: అడ్రస్ బార్‌లో ' + OFFICIAL + ' ఉందో చూసుకోండి.'));
       if (res.pay.caterer) pay.appendChild(el('p', null, res.pay.caterer));
       var row = el('div', 'upi');
       row.appendChild(el('code', null, res.pay.upi));
@@ -318,6 +324,7 @@
   function phonePay(res) {
     var pay = el('div', 'pay');
     pay.appendChild(el('b', null, '📱 ఇప్పుడు చెల్లించండి: నేరుగా క్యాటరర్‌కు · Pay the caterer'));
+    pay.appendChild(el('p', 'tiny', '✅ చెల్లించే ముందు: అడ్రస్ బార్‌లో ' + OFFICIAL + ' ఉందో చూసుకోండి.'));
     if (res.pay.caterer) pay.appendChild(el('p', null, res.pay.caterer));
     pay.appendChild(el('p', null, 'PhonePe / Google Pay / Paytm నంబర్:'));
     var row = el('div', 'upi');

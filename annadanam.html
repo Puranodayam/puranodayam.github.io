@@ -11,6 +11,10 @@
   <meta property="og:image" content="logo.png">
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- open connections early: page data comes from Google Apps Script, photos from Google Drive -->
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://drive.google.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;800&display=swap" rel="stylesheet">
@@ -33,6 +37,7 @@
 
   <main>
     <section class="card">
+      <p class="official">✅ అధికారిక పేజీ: <b>puranodayam.github.io</b> - అడ్రస్ బార్‌లో ఇదే ఉందో చూసుకోండి. <span class="en">Official page: check that the address bar shows exactly this.</span></p>
       <div class="trust">
         <b>🙏 మేము డబ్బు తీసుకోము.</b>
         <span>మీరు నేరుగా క్యాటరర్‌కు UPI ద్వారా చెల్లిస్తారు. ప్రతి బిల్లు, ఫోటో ఇక్కడ అందరికీ కనిపిస్తుంది.
@@ -117,6 +122,7 @@
   </main>
 
   <footer>
+    <p class="official">✅ అధికారిక పేజీ: <b>puranodayam.github.io</b> - అడ్రస్ బార్‌లో ఇదే ఉందో చూసుకోండి. <span class="en">Official page: check that the address bar shows exactly this.</span></p>
     <p>మీ ఫోన్ నంబర్ ఎప్పుడూ పేజీలో కనిపించదు. గోత్రం మీరు అనుమతిస్తేనే కనిపిస్తుంది. <span class="en">Phone numbers are never shown; gothram only if you allow it.</span></p>
     <p>ఎవరైనా పురాణోదయం పేరుతో తమ ఖాతాకు డబ్బు పంపమంటే నమ్మకండి.</p>
     <p class="muted" id="updated"></p>
