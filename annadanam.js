@@ -1,12 +1,12 @@
-/* Puranodayam annadanam page (sponsor-direct). Plain JavaScript, no libraries.
-   We never take money: sponsors pledge here, then pay the caterer directly after the date is confirmed. */
+/* Puranodayam annadanam page: a sponsor books meals for their own special day and pays the CATERER directly
+   (now, or after we contact them). Food is served on that day only after full payment. We never take money. */
 (function () {
   'use strict';
 
   var C = window.SEVA_CONFIG || {};
   var API = String(C.API_URL || '').trim();
   var PAGE_URL = location.origin + location.pathname;
-  var FEED_KEY = 'pv_ann_v1';
+  var FEED_KEY = 'pv_ann_v2';
   var feed = null;
 
   // ---------------------------------------------------------------- helpers
@@ -45,6 +45,8 @@
   function driveThumb(id) { return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w600'; }
   function driveView(id) { return 'https://drive.google.com/file/d/' + encodeURIComponent(id) + '/view'; }
 
+  function settings() { return (feed && feed.settings) || { cost: 0, payNow: false, minDate: '', maxDate: '' }; }
+
   // ---------------------------------------------------------------- visit count (shows in the Daily report)
   function logVisit() {
     if (!API || getItem('sessionStorage', 'pv_scan_annadanam')) return;
@@ -61,9 +63,16 @@
     $('t-done').textContent = String(t.done || 0);
     $('t-meals').textContent = String(t.meals || 0);
     $('t-sponsors').textContent = String(t.sponsors || 0);
-    renderActive(feed.active || [], feed.waiting || 0);
+    var s = settings();
+    if (s.minDate) $('p-date').min = s.minDate;
+    if (s.maxDate) $('p-date').max = s.maxDate;
+    var nowRadio = document.querySelector('input[name="pay"][value="now"]');
+    nowRadio.disabled = !s.payNow;
+    $('pay-now-label').classList.toggle('off', !s.payNow);
+    if (!s.payNow && nowRadio.checked) nowRadio.checked = false;
+    renderUpcoming(feed.upcoming || []);
     renderHistory(feed.history || []);
-    updateCost();
+    updateTotal();
     if (feed.updated) {
       var u = new Date(feed.updated);
       $('updated').textContent = 'చివరి అప్‌డేట్: ' +
@@ -73,6 +82,11 @@
 
   function sponsorLine(s) {
     var li = el('li');
+    if (!s.name) {
+      li.appendChild(el('b', null, '🙏 ఒక భక్తుడు'));
+      li.appendChild(document.createTextNode(' - ' + s.meals + ' భోజనాలు'));
+      return li;
+    }
     li.appendChild(el('b', null, '🙏 ' + s.name));
     if (s.gothram) li.appendChild(document.createTextNode(' (' + s.gothram + ' గోత్రం)'));
     var what = [s.occasion, s.forWhom].filter(Boolean).join(' · ');
@@ -86,73 +100,22 @@
     return ul;
   }
 
-  function renderActive(active, waiting) {
-    var box = $('active');
+  function renderUpcoming(list) {
+    var box = $('upcoming');
     box.textContent = '';
-    if (!active.length) {
-      box.appendChild(el('p', null, 'ప్రస్తుతం నమోదు జరుగుతున్న అన్నదానం లేదు. ఇప్పుడు నమోదు చేస్తే, తదుపరి అన్నదానంలో చేరుస్తాము.'));
-      box.appendChild(el('p', 'tiny', 'No annadanam is open right now - pledge now and we add you to the next one.'));
-      if (waiting > 0) box.appendChild(el('p', 'muted', waiting + ' భోజనాలు తదుపరి అన్నదానం కోసం ఎదురుచూస్తున్నాయి.'));
+    if (!list.length) {
+      box.appendChild(el('p', 'muted', 'ఇంకా బుకింగ్‌లు లేవు - మీ రోజును మొదట బుక్ చేయండి! · No paid bookings yet.'));
       return;
     }
-    active.forEach(function (b) {
+    list.forEach(function (u) {
       var card = el('article', 'ann');
       var head = el('div', 'ann-head');
-      head.appendChild(el('b', null, 'అన్నదానం #' + b.no));
-      head.appendChild(el('span', 'status ' + b.status,
-        b.status === 'confirmed' ? 'తేదీ ఖరారు' + (b.date ? ': ' + niceDate(b.date) : '') : 'స్పాన్సర్లు కావాలి'));
+      head.appendChild(el('b', null, '📅 ' + niceDate(u.date)));
+      head.appendChild(el('span', 'status ' + (u.past ? 'open' : 'confirmed'), u.past ? 'ఫోటోలు త్వరలో' : u.meals + ' భోజనాలు'));
       card.appendChild(head);
-
-      var facts = [];
-      if (b.area) facts.push('📍 ' + b.area);
-      if (b.cost) facts.push('ఒక్క భోజనం ' + rupees(b.cost));
-      if (facts.length) card.appendChild(el('p', 'meta', facts.join(' · ')));
-
-      if (b.goal) {
-        var pct = Math.min(100, Math.round((b.pledged / b.goal) * 100));
-        var bar = el('div', 'bar');
-        var fill = el('i');
-        fill.style.width = pct + '%';
-        bar.appendChild(fill);
-        card.appendChild(bar);
-        card.appendChild(el('p', 'meta', b.pledged + ' / ' + b.goal + ' భోజనాలు నమోదు · ' + b.paid + ' చెల్లించారు'));
-      } else {
-        card.appendChild(el('p', 'meta', b.pledged + ' భోజనాలు నమోదు · ' + b.paid + ' చెల్లించారు'));
-      }
-
-      if (b.status === 'confirmed') card.appendChild(payBox(b));
-      if (b.sponsors && b.sponsors.length) card.appendChild(sponsorList(b.sponsors));
+      card.appendChild(sponsorList(u.sponsors || []));
       box.appendChild(card);
     });
-  }
-
-  function payBox(b) {
-    var pay = el('div', 'pay');
-    pay.appendChild(el('b', null, '💳 చెల్లింపు: నేరుగా క్యాటరర్‌కు'));
-    if (!b.upi) {
-      pay.appendChild(el('p', null, 'చెల్లింపు వివరాలు మీకు ఫోన్‌లో తెలియజేస్తాము.'));
-      return pay;
-    }
-    if (b.caterer) pay.appendChild(el('p', null, b.caterer));
-    var row = el('div', 'upi');
-    row.appendChild(el('code', null, b.upi));
-    var copy = el('button', 'btn-copy', 'కాపీ');
-    copy.type = 'button';
-    copy.addEventListener('click', function () {
-      var done = function () { copy.textContent = '✓ కాపీ అయింది'; };
-      try {
-        navigator.clipboard.writeText(b.upi).then(done, function () {});
-      } catch (e) { /* no clipboard: the UPI ID is on screen */ }
-    });
-    row.appendChild(copy);
-    pay.appendChild(row);
-    var open = el('a', 'btn-upi', 'UPI యాప్‌లో తెరవండి');
-    open.href = 'upi://pay?pa=' + encodeURIComponent(b.upi) + '&pn=' + encodeURIComponent(b.caterer || 'Caterer') +
-      '&cu=INR&tn=' + encodeURIComponent('Annadanam ' + b.no);
-    pay.appendChild(open);
-    pay.appendChild(el('p', 'tiny', 'మీరు నమోదు చేసిన భోజనాలకు మాత్రమే చెల్లించండి (భోజనాలు × ' + rupees(b.cost) +
-      '). క్యాటరర్ నిర్ధారించిన తర్వాత మీ పేరు ఇక్కడ కనిపిస్తుంది. · Pay only for the meals you pledged.'));
-    return pay;
   }
 
   function mediaTile(item) {
@@ -203,38 +166,50 @@
     if (!history.length) return;
     var box = $('history');
     box.textContent = '';
-    history.forEach(function (b) {
+    history.forEach(function (h) {
       var card = el('article', 'ann');
       var head = el('div', 'ann-head');
-      head.appendChild(el('b', null, 'అన్నదానం #' + b.no + (b.date ? ' · ' + niceDate(b.date) : '')));
+      head.appendChild(el('b', null, '📅 ' + niceDate(h.date)));
       head.appendChild(el('span', 'veg-mini', 'శాకాహారం'));
       card.appendChild(head);
       var facts = [];
-      if (b.served || b.paid) facts.push((b.served || b.paid) + ' భోజనాలు అందించాము');
-      if (b.area) facts.push('📍 ' + b.area);
+      if (h.served) facts.push(h.served + ' భోజనాలు అందించాము');
+      if (h.area) facts.push('📍 ' + h.area);
       if (facts.length) card.appendChild(el('p', 'meta', facts.join(' · ')));
-
-      var items = (b.media || []).slice();
-      if (b.youtube) items.push({ id: b.youtube, kind: 'youtube' });
-      (b.bills || []).forEach(function (x) { items.push({ id: x.id, kind: x.kind, label: 'బిల్లు' }); });
+      var items = (h.media || []).slice();
+      if (h.youtube) items.push({ id: h.youtube, kind: 'youtube' });
+      (h.bills || []).forEach(function (x) { items.push({ id: x.id, kind: x.kind, label: 'బిల్లు' }); });
       if (items.length) {
         var grid = el('div', 'media');
         items.forEach(function (it) { grid.appendChild(mediaTile(it)); });
         card.appendChild(grid);
       }
-      if (b.note) card.appendChild(el('p', 'note', b.note));
-      if (b.sponsors && b.sponsors.length) {
+      if (h.note) card.appendChild(el('p', 'note', h.note));
+      if (h.sponsors && h.sponsors.length) {
         card.appendChild(el('p', 'meta', 'స్పాన్సర్లు · Sponsors'));
-        card.appendChild(sponsorList(b.sponsors));
+        card.appendChild(sponsorList(h.sponsors));
       }
       box.appendChild(card);
     });
   }
 
+  function updateTotal() {
+    var cost = settings().cost;
+    var meals = Number($('p-meals').value) || 0;
+    var box = $('p-total');
+    box.textContent = '';
+    if (cost > 0 && meals > 0) {
+      box.appendChild(el('b', null, 'మొత్తం: ' + rupees(meals * cost)));
+      box.appendChild(el('small', null, '(' + meals + ' భోజనాలు × ' + rupees(cost) + ') · Total'));
+    } else if (meals > 0) {
+      box.appendChild(el('small', null, 'మొత్తం మేము ఫోన్‌లో తెలియజేస్తాము · We will tell you the total'));
+    }
+  }
+
   // ---------------------------------------------------------------- loading
   function load() {
     if (!API) {
-      $('active').textContent = 'ఈ పేజీ ఇంకా సిద్ధం కాలేదు. · This page is not ready yet.';
+      $('upcoming').textContent = 'ఈ పేజీ ఇంకా సిద్ధం కాలేదు. · This page is not ready yet.';
       return;
     }
     var cached = getItem('localStorage', FEED_KEY);
@@ -248,11 +223,11 @@
         setItem('localStorage', FEED_KEY, JSON.stringify(d));
       })
       .catch(function () {
-        if (!cached) $('active').textContent = 'వివరాలు లోడ్ కాలేదు - కొద్దిసేపటి తర్వాత మళ్ళీ చూడండి.';
+        if (!cached) $('upcoming').textContent = 'వివరాలు లోడ్ కాలేదు - కొద్దిసేపటి తర్వాత మళ్ళీ చూడండి.';
       });
   }
 
-  // ---------------------------------------------------------------- pledge form
+  // ---------------------------------------------------------------- booking form
   var ERRORS = {
     empty: 'దయచేసి మీ పేరు రాయండి. · Please type your name.',
     short: 'పేరు కనీసం 2 అక్షరాలు ఉండాలి. · At least 2 letters.',
@@ -262,7 +237,9 @@
     forWhom: '"ఎవరి పేరు మీద" సరిగా రాయండి. · Please check "in whose name".',
     occasion: 'సందర్భం సరిగా రాయండి. · Please check the occasion.',
     meals: 'భోజనాల సంఖ్య 1 నుండి 1000 వరకు. · Meals: 1 to 1000.',
-    phone: 'ఫోన్ నంబర్ 10 అంకెలు ఉండాలి. · Phone must be 10 digits.',
+    date: 'దయచేసి సరైన తేదీ ఎంచుకోండి. · Please pick a valid date.',
+    phone: 'సరైన 10 అంకెల ఫోన్ నంబర్ రాయండి. · Please type a 10-digit phone number.',
+    pay: 'చెల్లింపు ఎప్పుడో ఎంచుకోండి. · Please choose when you will pay.',
     choose: 'పేరు చూపించాలా వద్దా ఎంచుకోండి. · Please choose Yes or No.',
     busy: 'కొద్దిసేపు ఆగి మళ్ళీ ప్రయత్నించండి. · Please try again in a minute.',
     net: 'నెట్‌వర్క్ సమస్య - మళ్ళీ ప్రయత్నించండి. · Network problem, please try again.',
@@ -275,60 +252,140 @@
     m.className = 'msg ' + (ok ? 'ok' : 'err');
   }
 
-  function openBatch() {
-    var list = (feed && feed.active) || [];
-    for (var i = list.length - 1; i >= 0; i--) if (list[i].status === 'open') return list[i];
-    return null;
+  function cleanPhone(v) {
+    var d = String(v || '').replace(/\D/g, '');
+    if (d.length === 12 && d.indexOf('91') === 0) d = d.slice(2);
+    if (d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
+    return /^[6-9]\d{9}$/.test(d) ? d : '';
   }
 
-  function updateCost() {
-    var b = openBatch();
-    var meals = Number($('p-meals').value) || 0;
-    $('p-cost').textContent = b && b.cost && meals > 0
-      ? 'సుమారు ' + rupees(meals * b.cost) + ' (ఒక్క భోజనం ' + rupees(b.cost) + ') - తేదీ ఖరారైన తర్వాత నేరుగా క్యాటరర్‌కు.'
-      : '';
+  function showResult(res, phone) {
+    var box = $('result');
+    box.textContent = '';
+    box.appendChild(el('h3', null, '🙏 ధన్యవాదాలు, ' + res.name + '!'));
+    var facts = el('dl', 'facts');
+    [['బుకింగ్ నంబర్', res.booking], ['తేదీ', niceDate(res.date)], ['భోజనాలు', String(res.meals)],
+     ['మొత్తం', res.amount ? rupees(res.amount) : 'ఫోన్‌లో తెలియజేస్తాము']].forEach(function (f) {
+      facts.appendChild(el('dt', null, f[0]));
+      facts.appendChild(el('dd', null, f[1]));
+    });
+    box.appendChild(facts);
+
+    if (res.pay && !res.pay.upi && res.pay.phone) {
+      box.appendChild(phonePay(res));
+    } else if (res.pay) {
+      var pay = el('div', 'pay');
+      pay.appendChild(el('b', null, '💳 ఇప్పుడు చెల్లించండి: నేరుగా క్యాటరర్‌కు · Pay the caterer'));
+      if (res.pay.caterer) pay.appendChild(el('p', null, res.pay.caterer));
+      var row = el('div', 'upi');
+      row.appendChild(el('code', null, res.pay.upi));
+      var copy = el('button', 'btn-copy', 'కాపీ');
+      copy.type = 'button';
+      copy.addEventListener('click', function () {
+        try {
+          navigator.clipboard.writeText(res.pay.upi).then(function () { copy.textContent = '✓ కాపీ అయింది'; }, function () {});
+        } catch (e) { /* no clipboard: the UPI ID is on screen */ }
+      });
+      row.appendChild(copy);
+      pay.appendChild(row);
+      var open = el('a', 'btn-upi', 'UPI యాప్‌లో ' + rupees(res.pay.amount) + ' చెల్లించండి');
+      // keep "@" literal in pa= (some UPI apps do not decode %40)
+      open.href = 'upi://pay?pa=' + encodeURIComponent(res.pay.upi).replace(/%40/g, '@') +
+        '&pn=' + encodeURIComponent(res.pay.caterer || 'Caterer') +
+        '&am=' + encodeURIComponent(String(res.pay.amount)) + '&cu=INR&tn=' + encodeURIComponent('Annadanam ' + res.booking);
+      pay.appendChild(open);
+      pay.appendChild(el('p', 'tiny', 'పూర్తి మొత్తం ' + rupees(res.pay.amount) + ' చెల్లించండి. క్యాటరర్ నిర్ధారించిన తర్వాత ' +
+        'మేము మీకు WhatsApp చేస్తాము, ఆ రోజు భోజనం అందిస్తాము. · Pay the full amount; we confirm on WhatsApp.'));
+      box.appendChild(pay);
+    } else {
+      box.appendChild(el('p', 'contact', '📞 మీ వివరాలు సేవ్ అయ్యాయి. మేము మీకు ' + phone +
+        ' కి కాల్ / WhatsApp చేస్తాము. ఇప్పుడు డబ్బు చెల్లించకండి. · Saved - we will call or WhatsApp you.'));
+    }
+    box.appendChild(el('p', 'tiny', 'మీ బుకింగ్ నంబర్ ' + res.booking + ' గుర్తుంచుకోండి. పూర్తి చెల్లింపు అందిన తర్వాతే మీ రోజున భోజనం అందిస్తాము.'));
+    var again = el('button', 'btn-light', 'ఇంకో బుకింగ్ · Book again');
+    again.type = 'button';
+    again.addEventListener('click', function () {
+      box.hidden = true;
+      $('pledge-form').hidden = false;
+    });
+    box.appendChild(again);
+    $('pledge-form').hidden = true;
+    box.hidden = false;
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /** "Pay now" when the caterer gave a PhonePe / Google Pay NUMBER (not a UPI ID): send money to that number. */
+  function phonePay(res) {
+    var pay = el('div', 'pay');
+    pay.appendChild(el('b', null, '📱 ఇప్పుడు చెల్లించండి: నేరుగా క్యాటరర్‌కు · Pay the caterer'));
+    if (res.pay.caterer) pay.appendChild(el('p', null, res.pay.caterer));
+    pay.appendChild(el('p', null, 'PhonePe / Google Pay / Paytm నంబర్:'));
+    var row = el('div', 'upi');
+    row.appendChild(el('code', null, res.pay.phone));
+    var copy = el('button', 'btn-copy', 'కాపీ');
+    copy.type = 'button';
+    copy.addEventListener('click', function () {
+      try {
+        navigator.clipboard.writeText(res.pay.phone).then(function () { copy.textContent = '✓ కాపీ అయింది'; }, function () {});
+      } catch (e) { /* no clipboard: the number is on screen */ }
+    });
+    row.appendChild(copy);
+    pay.appendChild(row);
+    pay.appendChild(el('p', 'amount-line', 'పంపాల్సిన మొత్తం: ' + rupees(res.pay.amount)));
+    var steps = el('ol', 'pay-steps');
+    ['PhonePe (లేదా Google Pay) తెరవండి', '"To Mobile Number" / "Pay phone number" ఎంచుకోండి',
+     'పై నంబర్ ఇచ్చి ' + rupees(res.pay.amount) + ' పంపండి', 'నోట్‌లో బుకింగ్ నంబర్ ' + res.booking + ' రాయండి']
+      .forEach(function (t) { steps.appendChild(el('li', null, t)); });
+    pay.appendChild(steps);
+    pay.appendChild(el('p', 'tiny', 'పూర్తి మొత్తం ' + rupees(res.pay.amount) + ' చెల్లించండి. క్యాటరర్ నిర్ధారించిన తర్వాత ' +
+      'మేము మీకు WhatsApp చేస్తాము, ఆ రోజు భోజనం అందిస్తాము. · Pay the full amount; we confirm on WhatsApp.'));
+    return pay;
   }
 
   function onSubmit(ev) {
     ev.preventDefault();
     var form = ev.target;
+    var s = settings();
+    var date = $('p-date').value;
     var name = $('p-name').value.replace(/\s+/g, ' ').trim();
     var meals = Number($('p-meals').value);
-    var choice = form.querySelector('input[name="show"]:checked');
+    var phone = cleanPhone($('p-phone').value);
+    var pay = form.querySelector('input[name="pay"]:checked');
+    var show = form.querySelector('input[name="show"]:checked');
+    if (!date || (s.minDate && date < s.minDate) || (s.maxDate && date > s.maxDate)) {
+      return showMsg(s.minDate ? 'తేదీ ' + niceDate(s.minDate) + ' లేదా తర్వాత ఎంచుకోండి. · Pick ' + s.minDate + ' or later.'
+                               : ERRORS.date, false);
+    }
+    if (!(meals >= 1 && meals <= 1000 && Math.floor(meals) === meals)) return showMsg(ERRORS.meals, false);
     if (!name) return showMsg(ERRORS.empty, false);
     if (Array.from(name).length < 2) return showMsg(ERRORS.short, false);
-    if (!(meals >= 1 && meals <= 1000 && Math.floor(meals) === meals)) return showMsg(ERRORS.meals, false);
-    var phone = $('p-phone').value.trim();
-    if (phone && !/^[6-9]\d{9}$/.test(phone.replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, ''))) {
-      return showMsg(ERRORS.phone, false);
-    }
-    if (!choice) return showMsg(ERRORS.choose, false);
+    if (!phone) return showMsg(ERRORS.phone, false);
+    if (!pay) return showMsg(ERRORS.pay, false);
+    if (!show) return showMsg(ERRORS.choose, false);
     if (!API) return showMsg(ERRORS.off, false);
 
     var body = {
-      action: 'pledge', name: name, gothram: $('p-gothram').value.trim(),
+      action: 'pledge', date: date, name: name, gothram: $('p-gothram').value.trim(),
       showGothram: $('p-show-gothram').checked, occasion: $('p-occasion').value,
       occasionOther: $('p-occasion-other').value.trim(), forWhom: $('p-for').value.trim(),
-      prefDate: $('p-date').value, meals: meals, phone: phone, show: choice.value === 'yes',
-      website: form.elements.website.value
+      meals: meals, phone: phone, pay: pay.value, show: show.value === 'yes', website: form.elements.website.value
     };
     var btn = $('p-btn');
     btn.disabled = true;
+    showMsg('', true);
     fetch(API, { method: 'POST', body: JSON.stringify(body) })
       .then(function (r) { return r.json(); })
       .then(function (res) {
-        if (!res || !res.ok) return showMsg(ERRORS[res && res.error] || ERRORS.net, false);
-        showMsg('🙏 ధన్యవాదాలు, ' + (res.name || name) + '! ' + meals + ' భోజనాలు నమోదయ్యాయి. ఇప్పుడు డబ్బు చెల్లించకండి. ' +
-          'తేదీ ఖరారైనప్పుడు క్యాటరర్ UPI ఈ పేజీలో కనిపిస్తుంది' + (phone ? ', మీకు ఫోన్‌లో కూడా తెలియజేస్తాము.' : '.') +
-          ' · Thank you! Do not pay now.', true);
-        var b = openBatch();
-        if (b && res.batch === b.no) {
-          b.pledged += meals;
-          renderActive(feed.active, feed.waiting || 0);
+        if (!res || !res.ok) {
+          if (res && res.error === 'date' && res.minDate) {
+            return showMsg('తేదీ ' + niceDate(res.minDate) + ' లేదా తర్వాత ఎంచుకోండి. · Pick ' + res.minDate + ' or later.', false);
+          }
+          return showMsg(ERRORS[res && res.error] || ERRORS.net, false);
         }
+        showResult(res, phone);
         form.reset();
         $('p-occasion-other').hidden = true;
-        updateCost();
+        updateTotal();
       })
       .catch(function () { showMsg(ERRORS.net, false); })
       .then(function () { btn.disabled = false; });
@@ -337,13 +394,14 @@
   // ---------------------------------------------------------------- start
   function start() {
     $('pledge-form').addEventListener('submit', onSubmit);
-    $('p-meals').addEventListener('input', updateCost);
+    $('p-meals').addEventListener('input', updateTotal);
     $('p-occasion').addEventListener('change', function () {
       $('p-occasion-other').hidden = this.value !== 'other';
     });
-    var text = 'పురాణోదయం అన్నదాన సేవ - 100% శాకాహారం. మీ పుట్టినరోజు, పెళ్లి రోజు సందర్భంగా భోజనాలు స్పాన్సర్ చేయండి: ' +
+    var text = 'పురాణోదయం అన్నదాన సేవ - 100% శాకాహారం. మీ పుట్టినరోజు, పెళ్లి రోజు రోజున భోజనాలు స్పాన్సర్ చేయండి: ' +
       PAGE_URL + '?s=share';
     $('share-btn').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+    updateTotal();
     logVisit();
     load();
   }

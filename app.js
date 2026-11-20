@@ -114,6 +114,7 @@
     renderSupporters(feed.supporters, feed.scans);
     renderGrowth(feed.growth);
     renderVideos(feed.videos);
+    renderAnnadanam(feed.annadanam);
     if (feed.updated) {
       var t = new Date(feed.updated);
       $('updated').textContent = 'చివరి అప్‌డేట్: ' +
@@ -188,6 +189,41 @@
       list.appendChild(item);
     });
     $('seva-more').hidden = entries.length <= sevaShown;
+  }
+
+  /** Annadanam summary from the same feed - it changes by itself with each booking, "paid" and report. */
+  function renderAnnadanam(a) {
+    var box = $('ann-summary');
+    if (!a || !a.totals) return;
+    var t = a.totals;
+    var next = a.next || [];
+    if (!(t.done > 0 || t.sponsors > 0 || next.length)) { box.hidden = true; return; }
+    box.hidden = false;
+    $('a-done').textContent = String(t.done || 0);
+    $('a-meals').textContent = String(t.meals || 0);
+    $('a-sponsors').textContent = String(t.sponsors || 0);
+    var nextLine = $('a-next');
+    nextLine.hidden = !next.length;
+    nextLine.textContent = next.length ? '📅 రాబోయే: ' + next.map(function (n) {
+      return niceDate(n.date) + ' (' + n.meals + ' భోజనాలు)';
+    }).join(', ') : '';
+    var latest = a.latest;
+    var latestLine = $('a-latest');
+    latestLine.hidden = !latest;
+    latestLine.textContent = latest ? '✅ చివరి అన్నదానం: ' + niceDate(latest.date) + ' - ' + latest.served + ' భోజనాలు' : '';
+    var photos = $('a-photos');
+    photos.textContent = '';
+    ((latest && latest.photos) || []).forEach(function (id) {
+      var link = el('a');
+      link.href = 'annadanam.html';
+      var img = el('img');
+      img.loading = 'lazy';
+      img.alt = 'అన్నదానం ఫోటో';
+      img.src = DEMO ? 'logo-240.webp' : 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w400';
+      img.onerror = function () { link.remove(); };
+      link.appendChild(img);
+      photos.appendChild(link);
+    });
   }
 
   function renderSupporters(sup, scans) {
