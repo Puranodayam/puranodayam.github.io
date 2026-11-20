@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="te">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>పురాణోదయం | Puranodayam</title>
+  <meta name="description" content="పురాణోదయం - తెలుగు భక్తి ఛానల్. YouTube లో Subscribe చేయండి. మా అన్నదాన సేవ రసీదులు ఇక్కడ చూడండి.">
+  <meta name="theme-color" content="#5a0f0a">
+  <meta property="og:title" content="పురాణోదయం | Puranodayam">
+  <meta property="og:description" content="పురాతన కథలు, నూతన వెలుగు. అన్నదాన సేవ - ప్రతి రసీదు అందరికీ కనిపిస్తుంది.">
+  <meta property="og:image" content="logo.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="demo-banner" class="demo-banner" hidden>DEMO DATA - ఇవి నమూనా వివరాలు మాత్రమే</div>
+
+  <header class="hero">
+    <img class="logo" src="logo-240.webp" width="120" height="120" alt="పురాణోదయం లోగో">
+    <h1>పురాణోదయం</h1>
+    <p class="tagline">పురాతన కథలు, నూతన వెలుగు <span class="en">· Puranodayam</span></p>
+    <p class="about">మన పురాణ కథలు, దేవాలయ ఐతిహ్యాలు, పండుగల విశిష్టతలను దృశ్యరూపంలో చెప్పే తెలుగు భక్తి ఛానల్.</p>
+    <div class="chips" id="chips">
+      <div class="chip"><b id="st-subs">-</b><span>సబ్‌స్క్రైబర్లు</span></div>
+      <div class="chip"><b id="st-videos">-</b><span>వీడియోలు</span></div>
+      <div class="chip"><b id="st-views">-</b><span>వీక్షణలు</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card subscribe">
+      <a id="sub-btn" class="btn-sub" href="https://www.youtube.com/channel/UC44-2FMB9xYlZwHpkNqA3cQ?sub_confirmation=1" rel="noopener">
+        <svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#fff"/><path d="M11 5.5v9l8-4.5z" fill="#e00"/></svg>
+        <span>YouTube లో Subscribe చేయండి<small>Subscribe on YouTube · ఉచితం</small></span>
+      </a>
+
+      <h2 class="bell-title">🔔 కొత్త వీడియో రాగానే మీకు తెలియాలంటే</h2>
+      <ol class="steps">
+        <li><span class="num">1</span><div><b>Subscribe నొక్కండి</b><small>Tap Subscribe</small></div></li>
+        <li><span class="num">2</span><div><b>పక్కనే ఉన్న 🔔 గంట గుర్తు నొక్కండి</b><small>Tap the bell next to it</small></div></li>
+        <li><span class="num">3</span><div><b>“అన్నీ” (All) ఎంచుకోండి</b><small>Choose “All”</small></div></li>
+      </ol>
+    </section>
+
+    <section class="card seva" id="seva">
+      <h2>🍛 అన్నదాన సేవ <span class="en">Annadanam Seva</span></h2>
+      <p id="seva-text" class="lead"></p>
+      <p id="seva-text-en" class="en-block"></p>
+      <div class="trust">
+        <b>🙏 మేము మీ నుండి ఎటువంటి డబ్బు అడగము. ఈ పేజీలో చెల్లింపు లింక్ లేదు.</b>
+        <span>We never ask you for money. There is no payment link on this page. ఎవరైనా పురాణోదయం పేరుతో డబ్బు అడిగితే నమ్మకండి.</span>
+      </div>
+      <div class="totals" id="seva-totals" hidden>
+        <div><b id="t-amount">₹0</b><span>మొత్తం విరాళం</span></div>
+        <div><b id="t-count">0</b><span>సేవలు</span></div>
+        <div id="t-meals-box" hidden><b id="t-meals">0</b><span>భోజనాలు</span></div>
+        <div><b id="t-receipts">0</b><span>రసీదులు</span></div>
+      </div>
+      <div id="seva-list" class="seva-list">
+        <p class="muted" id="seva-empty">మొదటి సేవ రసీదు త్వరలో ఇక్కడ కనిపిస్తుంది.<br><small>The first seva receipt will appear here soon.</small></p>
+      </div>
+      <button id="seva-more" class="btn-light" hidden>మరిన్ని సేవలు చూడండి</button>
+    </section>
+
+    <section class="card supporters" id="supporters">
+      <h2>🙏 మాతో చేరిన భక్తులు <span class="en">Devotees who joined us</span></h2>
+      <p class="muted" id="sup-count"></p>
+
+      <form id="name-form" class="name-form" autocomplete="off" novalidate>
+        <label for="yt-name"><b>మీరు Subscribe చేశారా? మీ YouTube పేరు రాయండి (ఇష్టమైతేనే)</b>
+          <small>Subscribed? Add your YouTube name (only if you like)</small></label>
+        <input id="yt-name" name="name" type="text" maxlength="40" placeholder="ఉదా: Rathod" required>
+        <input class="hp" name="website" type="text" tabindex="-1" aria-hidden="true">
+        <fieldset>
+          <legend>మీ పేరు ఈ పేజీలో చూపించాలా? <small>Show your name on this page?</small></legend>
+          <label class="radio"><input type="radio" name="show" value="yes"> అవును, చూపించండి <small>Yes</small></label>
+          <label class="radio"><input type="radio" name="show" value="no"> వద్దు, లెక్కలో మాత్రమే <small>No, count only</small></label>
+        </fieldset>
+        <button type="submit" class="btn-gold" id="name-btn">పేరు చేర్చండి <small>Add name</small></button>
+        <p id="name-msg" class="msg" role="status" aria-live="polite"></p>
+        <p class="tiny">మీ పేరు, తేదీ మాత్రమే భద్రపరుస్తాము. ఫోన్ నంబర్ రాయకండి. <span class="en">We keep only your name and the date. Please don't write phone numbers.</span></p>
+      </form>
+
+      <div id="sup-list" class="sup-list"></div>
+      <button id="sup-more" class="btn-light" hidden>మరిన్ని పేర్లు చూడండి</button>
+    </section>
+
+    <section class="card" id="growth-card" hidden>
+      <h2>📈 ఛానల్ ఎదుగుదల <span class="en">Channel growth</span></h2>
+      <div id="growth"></div>
+    </section>
+
+    <section class="card" id="videos-card" hidden>
+      <h2>🎬 తాజా వీడియోలు <span class="en">Latest videos</span></h2>
+      <div id="videos" class="videos"></div>
+    </section>
+
+    <section class="share">
+      <a id="share-btn" class="btn-wa" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp లో షేర్ చేయండి <small>Share on WhatsApp</small></a>
+    </section>
+  </main>
+
+  <footer>
+    <p id="scan-line"></p>
+    <p>వీడియోలలోని దృశ్యాలు, స్వరాలు AI సహాయంతో రూపొందించబడతాయి; ప్రతి కథ పురాణాల ఆధారంగా రాయబడుతుంది.</p>
+    <p>QR స్కాన్‌లను లెక్కిస్తాము - మీ వ్యక్తిగత వివరాలు తీసుకోము. <span class="en">We count QR scans; we take no personal details.</span></p>
+    <p class="muted" id="updated"></p>
+    <p>© పురాణోదయం · Puranodayam</p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
