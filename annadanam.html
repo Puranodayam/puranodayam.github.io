@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="te">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>అన్నదాన సేవ | పురాణోదయం</title>
+  <meta name="description" content="పురాణోదయం అన్నదాన సేవ - 100% శాకాహారం. మీ పుట్టినరోజు, పెళ్లి రోజు, పెద్దల జ్ఞాపకార్థం భోజనాలు స్పాన్సర్ చేయండి. మేము డబ్బు తీసుకోము.">
+  <meta name="theme-color" content="#5a0f0a">
+  <meta property="og:title" content="అన్నదాన సేవ | పురాణోదయం">
+  <meta property="og:description" content="100% శాకాహారం. స్పాన్సర్లు నేరుగా క్యాటరర్‌కు చెల్లిస్తారు - ప్రతి బిల్లు, ఫోటో అందరికీ కనిపిస్తుంది.">
+  <meta property="og:image" content="logo.png">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero hero-ann">
+    <a class="back" href="./">← పురాణోదయం</a>
+    <img class="logo" src="logo-240.webp" width="96" height="96" alt="పురాణోదయం లోగో">
+    <h1>అన్నదాన సేవ</h1>
+    <p class="tagline">పురాణోదయం <span class="en">· Annadanam Seva</span></p>
+    <p><span class="veg-badge"><i aria-hidden="true"></i>100% శాకాహారం · Pure veg</span></p>
+    <p class="about">రోడ్డు పక్కన ఉండేవారికి, యాచకులకు, అవసరమైన వారికి ఉచిత శాకాహార భోజనం. మీ పుట్టినరోజు, పెళ్లి రోజు, పెద్దల జ్ఞాపకార్థం భోజనాలు స్పాన్సర్ చేయండి.</p>
+    <div class="chips">
+      <div class="chip"><b id="t-done">-</b><span>అన్నదానాలు</span></div>
+      <div class="chip"><b id="t-meals">-</b><span>భోజనాలు</span></div>
+      <div class="chip"><b id="t-sponsors">-</b><span>స్పాన్సర్లు</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="trust">
+        <b>🙏 మేము డబ్బు తీసుకోము.</b>
+        <span>స్పాన్సర్లు నేరుగా క్యాటరర్‌కు చెల్లిస్తారు, అదీ తేదీ ఖరారైన తర్వాతే. ప్రతి బిల్లు, ఫోటో ఇక్కడ అందరికీ కనిపిస్తుంది.
+          <span class="en">We never take money: sponsors pay the caterer directly, only after the date is confirmed.</span></span>
+      </div>
+      <h2>ఎలా పనిచేస్తుంది <span class="en">How it works</span></h2>
+      <ol class="steps">
+        <li><span class="num">1</span><div><b>భోజనాలు నమోదు చేయండి, ఇప్పుడు డబ్బు వద్దు</b><small>Pledge meals below - no payment now</small></div></li>
+        <li><span class="num">2</span><div><b>భోజనాలు సరిపడా నమోదైతే, తేదీ ఖరారు చేసి మీకు తెలియజేస్తాము</b><small>When enough meals are pledged, we fix the date</small></div></li>
+        <li><span class="num">3</span><div><b>మీరు నేరుగా క్యాటరర్‌కు UPI ద్వారా చెల్లిస్తారు</b><small>You pay the caterer directly by UPI</small></div></li>
+        <li><span class="num">4</span><div><b>అన్నదానం తర్వాత ఫోటోలు, వీడియో, బిల్లు ఇక్కడ</b><small>Photos, video and bill are posted here</small></div></li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>🍛 తదుపరి అన్నదానం <span class="en">Next annadanam</span></h2>
+      <div id="active"><p class="muted">లోడ్ అవుతోంది…</p></div>
+    </section>
+
+    <section class="card" id="pledge">
+      <h2>✍️ భోజనాలు స్పాన్సర్ చేయండి <span class="en">Sponsor meals · no payment now</span></h2>
+      <form id="pledge-form" class="name-form" autocomplete="off" novalidate>
+        <label for="p-name"><b>మీ పేరు</b> <small>Your name</small></label>
+        <input id="p-name" type="text" maxlength="40" placeholder="ఉదా: రమేష్" required>
+
+        <label for="p-gothram"><b>గోత్రం (ఐచ్ఛికం)</b> <small>Gothram (optional)</small></label>
+        <input id="p-gothram" type="text" maxlength="30" placeholder="ఉదా: కాశ్యప">
+        <label class="check"><input id="p-show-gothram" type="checkbox"> గోత్రం కూడా పేజీలో చూపించండి <small>Also show my gothram</small></label>
+
+        <label for="p-occasion"><b>సందర్భం</b> <small>Occasion</small></label>
+        <select id="p-occasion">
+          <option value="seva">సాధారణ సేవ · General seva</option>
+          <option value="birthday">పుట్టినరోజు · Birthday</option>
+          <option value="anniversary">పెళ్లి రోజు · Wedding anniversary</option>
+          <option value="remembrance">పెద్దల జ్ఞాపకార్థం · In memory of elders</option>
+          <option value="vow">మొక్కు · Vow</option>
+          <option value="other">ఇతర · Other</option>
+        </select>
+        <input id="p-occasion-other" type="text" maxlength="40" placeholder="సందర్భం రాయండి · Type the occasion" hidden>
+
+        <label for="p-for"><b>ఎవరి పేరు మీద (ఐచ్ఛికం)</b> <small>In whose name (optional)</small></label>
+        <input id="p-for" type="text" maxlength="50" placeholder="ఉదా: కుమార్తె పుట్టినరోజు">
+
+        <label for="p-date"><b>కోరుకున్న తేదీ (వీలైతే)</b> <small>Preferred date, if possible (optional)</small></label>
+        <input id="p-date" type="date">
+
+        <label for="p-meals"><b>భోజనాలు</b> <small>Number of meals</small></label>
+        <input id="p-meals" type="number" inputmode="numeric" min="1" max="1000" step="1" value="10" required>
+        <p class="tiny" id="p-cost"></p>
+
+        <label for="p-phone"><b>మీ ఫోన్ (ఐచ్ఛికం)</b> <small>Your phone (optional)</small></label>
+        <input id="p-phone" type="tel" inputmode="tel" maxlength="16" placeholder="98xxxxxxxx">
+        <p class="tiny">తేదీ ఖరారైనప్పుడు మీకు తెలియజేయడానికి మాత్రమే. పేజీలో ఎప్పుడూ కనిపించదు. <span class="en">Only to tell you the date. Never shown on the page.</span></p>
+
+        <input class="hp" name="website" type="text" tabindex="-1" aria-hidden="true">
+        <fieldset>
+          <legend>చెల్లించిన తర్వాత మీ పేరు, సందర్భం ఈ పేజీలో చూపించాలా? <small>Show your name and occasion here after you pay?</small></legend>
+          <label class="radio"><input type="radio" name="show" value="yes"> అవును, చూపించండి <small>Yes</small></label>
+          <label class="radio"><input type="radio" name="show" value="no"> వద్దు <small>No</small></label>
+        </fieldset>
+        <button type="submit" class="btn-gold" id="p-btn">నమోదు చేయండి <small>Register · no payment now</small></button>
+        <p id="p-msg" class="msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>📸 జరిగిన అన్నదానాలు <span class="en">Annadanams done</span></h2>
+      <p class="tiny">వారి గౌరవం కోసం, భోజనం తీసుకునేవారి ముఖాలు మేము చూపించము. <span class="en">For their dignity, we never show the faces of the people we feed.</span></p>
+      <div id="history"><p class="muted">మొదటి అన్నదానం ఫోటోలు త్వరలో ఇక్కడ. <small>Photos of the first annadanam will appear here.</small></p></div>
+    </section>
+
+    <section class="share">
+      <a id="share-btn" class="btn-wa" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp లో షేర్ చేయండి <small>Share on WhatsApp</small></a>
+    </section>
+  </main>
+
+  <footer>
+    <p>మీ ఫోన్ నంబర్ ఎప్పుడూ పేజీలో కనిపించదు. గోత్రం మీరు అనుమతిస్తేనే కనిపిస్తుంది. <span class="en">Phone numbers are never shown; gothram only if you allow it.</span></p>
+    <p>ఎవరైనా పురాణోదయం పేరుతో తమ ఖాతాకు డబ్బు పంపమంటే నమ్మకండి.</p>
+    <p class="muted" id="updated"></p>
+    <p><a href="./">← పురాణోదయం YouTube ఛానల్ పేజీ</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="annadanam.js"></script>
+</body>
+</html>
