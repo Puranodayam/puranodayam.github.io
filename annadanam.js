@@ -358,6 +358,8 @@
         '&pn=' + encodeURIComponent(res.pay.caterer || 'Caterer') +
         '&am=' + encodeURIComponent(String(res.pay.amount)) + '&cu=INR&tn=' + encodeURIComponent('Annadanam ' + res.booking);
       pay.appendChild(open);
+      pay.appendChild(el('p', 'tiny', 'PhonePe, Google Pay, Paytm, BHIM - ఏ UPI యాప్ అయినా సరే. మొత్తం, బుకింగ్ నంబర్ ' +
+        'వాటంతట అవే వస్తాయి. · Any UPI app; amount and booking number fill in by themselves.'));
       pay.appendChild(el('p', 'tiny', 'పూర్తి మొత్తం ' + rupees(res.pay.amount) + ' చెల్లించండి. క్యాటరర్ నిర్ధారించిన తర్వాత ' +
         'మేము మీకు WhatsApp చేస్తాము, ఆ రోజు భోజనం అందిస్తాము. · Pay the full amount; we confirm on WhatsApp.'));
       box.appendChild(pay);
@@ -366,7 +368,9 @@
         ' కి కాల్ / WhatsApp చేస్తాము. ఇప్పుడు డబ్బు చెల్లించకండి. · Saved - we will call or WhatsApp you.'));
     }
     var wa = feed && feed.contact && feed.contact.wa;
-    if (wa) {
+    if (res.pay) {
+      box.appendChild(claimBox(res.booking, res.pay.amount || res.amount, String(phone).slice(-4)));
+    } else if (wa) {
       var tell = el('a', 'btn-wa', 'WhatsApp లో మాకు తెలియజేయండి · Tell us on WhatsApp');
       tell.target = '_blank';
       tell.rel = 'noopener';
@@ -388,13 +392,79 @@
     box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  /** "Pay now" when the caterer gave a PhonePe / Google Pay NUMBER (not a UPI ID): send money to that number. */
+  /**
+   * After paying: red alert + "✅ I've paid" (optional 12-digit UTR). Records the claim and opens WhatsApp so the sponsor
+   * sends the screenshot. Nothing is confirmed by this - only after we see the money in the caterer's UPI app.
+   */
+  function claimBox(booking, amount, p4) {
+    var box = el('div', 'claim');
+    box.appendChild(el('p', 'alert-red', '🔴 ముఖ్యం: చెల్లించిన తర్వాత కింది బటన్ నొక్కి స్క్రీన్‌షాట్ WhatsApp లో పంపండి. ' +
+      'మేము క్యాటరర్ దగ్గర చెక్ చేసి నిర్ధారించే వరకు మీ బుకింగ్ నిర్ధారణ కాదు. · Your booking is confirmed only after we ' +
+      'see the money.'));
+    var id = 'utr-' + booking;
+    var label = el('label');
+    label.htmlFor = id;
+    label.appendChild(el('b', null, 'UPI లావాదేవీ నంబర్ (UTR, 12 అంకెలు) - ఐచ్ఛికం'));
+    label.appendChild(el('small', null, 'Shown in your UPI app after paying (UPI Ref / UTR)'));
+    box.appendChild(label);
+    var input = el('input');
+    input.id = id;
+    input.type = 'text';
+    input.inputMode = 'numeric';
+    input.maxLength = 16;
+    input.placeholder = 'ఉదా: 412345678901';
+    box.appendChild(input);
+    var wa = feed && feed.contact && feed.contact.wa;
+    var btn = el('a', 'btn-wa', '✅ చెల్లించాను · WhatsApp లో స్క్రీన్‌షాట్ పంపండి');
+    btn.target = '_blank';
+    btn.rel = 'noopener';
+    btn.href = wa ? 'https://wa.me/91' + wa : '#';
+    var note = el('p', 'msg', '');
+    btn.addEventListener('click', function (ev) {
+      var utr = input.value.replace(/\D/g, '');
+      if (utr && utr.length !== 12) {
+        ev.preventDefault();
+        note.textContent = 'UTR 12 అంకెలు ఉండాలి (లేదా ఖాళీగా వదిలేయండి). · UTR must be 12 digits, or leave it empty.';
+        note.className = 'msg err';
+        return;
+      }
+      var msg = 'నమస్కారం 🙏 నేను బుకింగ్ ' + booking + ' కోసం ' + (amount ? rupees(amount) + ' ' : '') +
+        'క్యాటరర్‌కు చెల్లించాను.' + (utr ? ' UTR: ' + utr + '.' : '') + ' స్క్రీన్‌షాట్ జత చేస్తున్నాను 📎';
+      if (wa) btn.href = 'https://wa.me/91' + wa + '?text=' + encodeURIComponent(msg);
+      else ev.preventDefault();
+      note.textContent = '⏳ …';
+      note.className = 'msg';
+      fetch(API, { method: 'POST', keepalive: true,
+                   body: JSON.stringify({ action: 'claim', b: booking, p4: p4, utr: utr }) })
+        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          if (r && r.ok) {
+            note.textContent = r.status === 'paid' ? '✅ మీ చెల్లింపు ఇప్పటికే నిర్ధారించబడింది. · Already confirmed.'
+              : r.status === 'cancelled' ? '❌ ఈ బుకింగ్ రద్దు అయింది. మమ్మల్ని సంప్రదించండి.'
+              : '🟡 మీ చెల్లింపు చెక్ చేస్తున్నాము. 📎 WhatsApp లో స్క్రీన్‌షాట్ జత చేయడం మరచిపోకండి. ' +
+                '· Checking your payment - remember to attach the screenshot.';
+            note.className = 'msg ok';
+          } else {
+            note.textContent = { utr: 'UTR 12 అంకెలు ఉండాలి.', locked: 'చాలా సార్లు తప్పు - గంట తర్వాత ప్రయత్నించండి.',
+              busy: 'కొద్దిసేపు ఆగి మళ్ళీ ప్రయత్నించండి.' }[r && r.error] || 'మళ్ళీ ప్రయత్నించండి. · Please try again.';
+            note.className = 'msg err';
+          }
+        })
+        .catch(function () { note.textContent = 'నెట్‌వర్క్ సమస్య - మళ్ళీ నొక్కండి. · Network problem, tap again.'; note.className = 'msg err'; });
+    });
+    box.appendChild(btn);
+    if (!wa) box.appendChild(el('p', 'tiny', 'మేము మిమ్మల్ని సంప్రదించినప్పుడు స్క్రీన్‌షాట్ పంపండి.'));
+    box.appendChild(note);
+    return box;
+  }
+
+  /** "Pay now" when the caterer gave a UPI phone NUMBER (not a UPI ID): send money to that number in any UPI app. */
   function phonePay(res) {
     var pay = el('div', 'pay');
     pay.appendChild(el('b', null, '📱 ఇప్పుడు చెల్లించండి: నేరుగా క్యాటరర్‌కు · Pay the caterer'));
     pay.appendChild(el('p', 'tiny', '✅ చెల్లించే ముందు: అడ్రస్ బార్‌లో ' + OFFICIAL + ' ఉందో చూసుకోండి.'));
     if (res.pay.caterer) pay.appendChild(el('p', null, res.pay.caterer));
-    pay.appendChild(el('p', null, 'PhonePe / Google Pay / Paytm నంబర్:'));
+    pay.appendChild(el('p', null, 'UPI నంబర్ (PhonePe, Google Pay, Paytm, BHIM - ఏ యాప్ అయినా):'));
     var row = el('div', 'upi');
     row.appendChild(el('code', null, res.pay.phone));
     var copy = el('button', 'btn-copy', 'కాపీ');
@@ -408,7 +478,7 @@
     pay.appendChild(row);
     pay.appendChild(el('p', 'amount-line', 'పంపాల్సిన మొత్తం: ' + rupees(res.pay.amount)));
     var steps = el('ol', 'pay-steps');
-    ['PhonePe (లేదా Google Pay) తెరవండి', '"To Mobile Number" / "Pay phone number" ఎంచుకోండి',
+    ['ఏదైనా UPI యాప్ తెరవండి (PhonePe, Google Pay, Paytm, BHIM)', '"Pay to mobile number" / "To Mobile Number" ఎంచుకోండి',
      'పై నంబర్ ఇచ్చి ' + rupees(res.pay.amount) + ' పంపండి', 'నోట్‌లో బుకింగ్ నంబర్ ' + res.booking + ' రాయండి']
       .forEach(function (t) { steps.appendChild(el('li', null, t)); });
     pay.appendChild(steps);
@@ -459,6 +529,43 @@
       })
       .catch(function () { say(CERR.net, false); })
       .then(function () { btn.disabled = false; });
+  }
+
+  var STATUS_TEXT = {
+    pending: ['⏳ చెల్లింపు ఇంకా రాలేదు', 'Payment not received yet', 'wait'],
+    checking: ['🟡 మీ చెల్లింపు చెక్ చేస్తున్నాము', 'We are checking your payment', 'wait'],
+    paid: ['✅ నిర్ధారించబడింది', 'Confirmed - food on your day', 'ok'],
+    cancelled: ['❌ రద్దు అయింది', 'Cancelled', 'bad']
+  };
+
+  function onStatus(ev) {
+    ev.preventDefault();
+    var out = $('s-result');
+    out.textContent = '';
+    var b = $('s-booking').value.trim().toUpperCase();
+    var p4 = $('s-p4').value.replace(/\D/g, '');
+    if (!/^A\d{4,}$/.test(b)) { out.appendChild(el('p', 'msg err', 'బుకింగ్ నంబర్ ఇలా ఉంటుంది: A0007')); return; }
+    if (p4.length !== 4) { out.appendChild(el('p', 'msg err', 'ఫోన్ చివరి 4 అంకెలు రాయండి.')); return; }
+    if (!API) return;
+    fetch(API + '?action=status&b=' + encodeURIComponent(b) + '&p4=' + encodeURIComponent(p4))
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r || !r.ok) {
+          out.appendChild(el('p', 'msg err', r && r.error === 'locked'
+            ? 'చాలా సార్లు తప్పు - గంట తర్వాత ప్రయత్నించండి. · Too many tries, try in an hour.'
+            : 'బుకింగ్ నంబర్ లేదా చివరి 4 అంకెలు సరిపోలలేదు. · Booking number or digits do not match.'));
+          return;
+        }
+        var t = STATUS_TEXT[r.status] || STATUS_TEXT.pending;
+        var chip = el('div', 'status-chip ' + t[2]);
+        chip.appendChild(el('b', null, t[0]));
+        chip.appendChild(el('small', null, t[1]));
+        out.appendChild(chip);
+        out.appendChild(el('p', 'meta', r.booking + ' · ' + niceDate(r.date) + ' · ' + r.meals + ' భోజనాలు' +
+          (r.amount ? ' · ' + rupees(r.amount) : '')));
+        if (r.status === 'pending' && settings().payNow) out.appendChild(claimBox(r.booking, r.amount, p4));
+      })
+      .catch(function () { out.appendChild(el('p', 'msg err', 'నెట్‌వర్క్ సమస్య - మళ్ళీ ప్రయత్నించండి.')); });
   }
 
   function onSubmit(ev) {
@@ -514,6 +621,7 @@
   function start() {
     $('pledge-form').addEventListener('submit', onSubmit);
     $('comment-form').addEventListener('submit', onComment);
+    $('status-form').addEventListener('submit', onStatus);
     Array.prototype.forEach.call(document.querySelectorAll('input[name="kind"]'), function (r) {
       r.addEventListener('change', function () { $('c-phone-box').hidden = this.value !== 'private'; });
     });

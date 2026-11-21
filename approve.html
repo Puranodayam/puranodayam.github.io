@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="te">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>చెల్లింపు ఆమోదం | పురాణోదయం</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#5a0f0a">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero hero-ann">
+    <img class="logo" src="logo-240.webp" width="72" height="72" alt="పురాణోదయం లోగో">
+    <h1>చెల్లింపు ఆమోదం</h1>
+    <p class="tagline">అడ్మిన్ మాత్రమే <span class="en">· Admin only - never forward this link</span></p>
+  </header>
+
+  <main>
+    <section class="card admin">
+      <div id="info"><p class="muted">లోడ్ అవుతోంది…</p></div>
+      <div id="actions" hidden>
+        <label class="check"><input id="seen" type="checkbox">
+          <span id="seen-text">క్యాటరర్ UPI యాప్‌లో ఈ మొత్తం వచ్చింది చూశాను</span></label>
+        <button type="button" class="btn-approve" id="approve" disabled>✅ ఆమోదించండి · Approve (paid)</button>
+        <button type="button" class="btn-cancel" id="cancel">❌ బుకింగ్ రద్దు చేయండి · Cancel booking</button>
+        <p class="tiny">స్క్రీన్‌షాట్ మాత్రమే చూసి ఆమోదించకండి - నకిలీ స్క్రీన్‌షాట్‌లు సాధారణం. · Never approve on a screenshot alone.</p>
+      </div>
+      <div id="done" hidden></div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="approve.js"></script>
+</body>
+</html>

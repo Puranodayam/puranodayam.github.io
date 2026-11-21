@@ -105,6 +105,18 @@
       <div id="result" class="result" hidden></div>
     </section>
 
+    <section class="card" id="status-card">
+      <h2>🔎 నా బుకింగ్ స్థితి <span class="en">Check my booking</span></h2>
+      <form id="status-form" class="name-form" autocomplete="off" novalidate>
+        <label for="s-booking"><b>బుకింగ్ నంబర్</b> <small>Booking number, e.g. A0007</small></label>
+        <input id="s-booking" type="text" maxlength="8" placeholder="A0007" autocapitalize="characters">
+        <label for="s-p4"><b>మీ ఫోన్ చివరి 4 అంకెలు</b> <small>Last 4 digits of your phone</small></label>
+        <input id="s-p4" type="tel" inputmode="numeric" maxlength="4" placeholder="1234">
+        <button type="submit" class="btn-light">చూడండి · Check</button>
+        <div id="s-result" aria-live="polite"></div>
+      </form>
+    </section>
+
     <section class="card">
       <h2>📅 రాబోయే అన్నదానాలు <span class="en">Upcoming (paid)</span></h2>
       <div id="upcoming"><p class="muted">లోడ్ అవుతోంది…</p></div>
