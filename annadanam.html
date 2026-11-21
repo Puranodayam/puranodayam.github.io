@@ -116,6 +116,43 @@
       <div id="history"><p class="muted">మొదటి అన్నదానం ఫోటోలు త్వరలో ఇక్కడ. <small>Photos of the first annadanam will appear here.</small></p></div>
     </section>
 
+    <section class="card" id="reviews-card" hidden>
+      <h2>⭐ దాతల మాటలు <span class="en">What sponsors say</span></h2>
+      <p class="avg" id="rev-avg" hidden></p>
+      <div id="reviews"></div>
+    </section>
+
+    <section class="card" id="comments-card">
+      <h2>💬 భక్తుల మాటలు, ప్రశ్నలు <span class="en">Comments and questions</span></h2>
+      <div id="comments"><p class="muted">మొదటి మాట మీదే కావచ్చు! <small>Be the first to write.</small></p></div>
+      <form id="comment-form" class="name-form" autocomplete="off" novalidate>
+        <label for="c-name"><b>మీ పేరు</b> <small>Your name</small></label>
+        <input id="c-name" type="text" maxlength="40" placeholder="ఉదా: లక్ష్మి" required>
+        <label for="c-text"><b>మీ మాట / ప్రశ్న</b> <small>Your message or question</small></label>
+        <textarea id="c-text" maxlength="500" rows="3" placeholder="..."></textarea>
+        <fieldset>
+          <legend>ఎవరు చూడాలి? <small>Who can see it?</small></legend>
+          <label class="radio"><input type="radio" name="kind" value="public"> అందరూ - మా ఆమోదం తర్వాత <small>Everyone, after we approve</small></label>
+          <label class="radio"><input type="radio" name="kind" value="private"> నాకు మాత్రమే జవాబు (ప్రైవేట్) <small>Private - we reply on WhatsApp</small></label>
+        </fieldset>
+        <div id="c-phone-box" hidden>
+          <label for="c-phone"><b>మీ WhatsApp నంబర్</b> <small>Only for our reply · never shown</small></label>
+          <input id="c-phone" type="tel" inputmode="tel" maxlength="16" placeholder="98xxxxxxxx">
+        </div>
+        <input class="hp" name="website" type="text" tabindex="-1" aria-hidden="true">
+        <p class="tiny">మాటలో లింకులు, ఫోన్ నంబర్లు రాయకండి. <span class="en">No links or phone numbers in the message.</span></p>
+        <button type="submit" class="btn-gold" id="c-btn">పంపండి <small>Send</small></button>
+        <p id="c-status" class="msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="card contact-card" id="contact" hidden>
+      <h2>📞 ప్రశ్నలు ఉన్నాయా? <span class="en">Questions? Talk to us</span></h2>
+      <a id="wa-chat" class="btn-wa" href="https://wa.me/" target="_blank" rel="noopener" hidden>WhatsApp లో మాట్లాడండి <small>Chat with us on WhatsApp</small></a>
+      <a id="wa-channel" class="btn-channel" href="https://whatsapp.com/" target="_blank" rel="noopener" hidden>📢 మా WhatsApp Channel ఫాలో అవ్వండి <small>Photos of every annadanam · Follow</small></a>
+      <p class="tiny">మేము వీలైనంత త్వరగా జవాబు ఇస్తాము. మేము ఎప్పుడూ మా స్వంత ఖాతాకు డబ్బు అడగము. <span class="en">We never ask money into our own account.</span></p>
+    </section>
+
     <section class="share">
       <a id="share-btn" class="btn-wa" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp లో షేర్ చేయండి <small>Share on WhatsApp</small></a>
     </section>

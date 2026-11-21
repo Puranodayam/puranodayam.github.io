@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="te">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>మీ అభిప్రాయం | పురాణోదయం</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#5a0f0a">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero hero-ann">
+    <a class="back" href="annadanam.html">← అన్నదాన సేవ</a>
+    <img class="logo" src="logo-240.webp" width="96" height="96" alt="పురాణోదయం లోగో">
+    <h1>మీ అభిప్రాయం</h1>
+    <p class="tagline">పురాణోదయం అన్నదాన సేవ <span class="en">· Your feedback</span></p>
+  </header>
+
+  <main>
+    <section class="card">
+      <p class="official">✅ అధికారిక పేజీ: <b>puranodayam.github.io</b> - అడ్రస్ బార్‌లో ఇదే ఉందో చూసుకోండి.</p>
+      <div id="who"><p class="muted">లోడ్ అవుతోంది…</p></div>
+
+      <form id="fb-form" class="name-form" autocomplete="off" novalidate hidden>
+        <p><b>మా సేవ ఎలా ఉంది?</b> <small>How was our seva? Tap 1 to 5</small></p>
+        <div class="rate" id="rate">
+          <button type="button" data-v="1"><b>1</b><small>బాగాలేదు</small></button>
+          <button type="button" data-v="2"><b>2</b><small>పర్వాలేదు</small></button>
+          <button type="button" data-v="3"><b>3</b><small>బాగుంది</small></button>
+          <button type="button" data-v="4"><b>4</b><small>చాలా బాగుంది</small></button>
+          <button type="button" data-v="5"><b>5</b><small>అద్భుతం</small></button>
+        </div>
+        <label for="fb-words"><b>ఏది నచ్చింది? ఏమి మెరుగుపరచాలి? (ఐచ్ఛికం)</b> <small>What did you like? What can we improve?</small></label>
+        <textarea id="fb-words" maxlength="400" rows="3"></textarea>
+        <label class="check"><input id="fb-show" type="checkbox"> నా పేరు, మాటలు పేజీలో చూపించవచ్చు <small>Show my name and words on the page</small></label>
+        <input class="hp" name="website" type="text" tabindex="-1" aria-hidden="true">
+        <button type="submit" class="btn-gold" id="fb-btn">పంపండి <small>Send</small></button>
+        <p id="fb-msg" class="msg" role="status" aria-live="polite"></p>
+      </form>
+
+      <div id="fb-done" class="result" hidden></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>మీ ఫోన్ నంబర్ ఎప్పుడూ పేజీలో కనిపించదు. <span class="en">Your phone number is never shown.</span></p>
+    <p><a href="annadanam.html">← అన్నదాన సేవ పేజీ</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="feedback.js"></script>
+</body>
+</html>

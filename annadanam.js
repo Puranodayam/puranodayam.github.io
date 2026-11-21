@@ -76,6 +76,9 @@
     if (!s.payNow && nowRadio.checked) nowRadio.checked = false;
     renderUpcoming(feed.upcoming || []);
     renderHistory(feed.history || []);
+    renderReviews(feed.reviews);
+    renderComments(feed.comments || []);
+    renderContact(feed.contact);
     updateTotal();
     if (feed.updated) {
       var u = new Date(feed.updated);
@@ -197,6 +200,61 @@
     });
   }
 
+  function stars(n) {
+    var s = '';
+    for (var i = 1; i <= 5; i++) s += i <= n ? '⭐' : '☆';
+    return s;
+  }
+
+  function renderReviews(r) {
+    var card = $('reviews-card');
+    if (!r || !(r.count > 0)) { card.hidden = true; return; }
+    card.hidden = false;
+    var avg = $('rev-avg');
+    avg.hidden = !r.avg;
+    avg.textContent = r.avg ? '⭐ ' + r.avg + ' / 5 · ' + r.count + ' దాతల అభిప్రాయాలు · ' + r.count + ' reviews' : '';
+    var box = $('reviews');
+    box.textContent = '';
+    (r.items || []).forEach(function (it) {
+      var item = el('article', 'review');
+      item.appendChild(el('div', 'stars', stars(it.rating)));
+      if (it.words) item.appendChild(el('p', 'words', '“' + it.words + '”'));
+      item.appendChild(el('p', 'who', '🙏 ' + it.name + (it.date ? ' · ' + niceDate(it.date) : '')));
+      box.appendChild(item);
+    });
+    if (!(r.items || []).length) box.appendChild(el('p', 'muted', r.count + ' దాతలు అభిప్రాయం ఇచ్చారు.'));
+  }
+
+  function renderComments(list) {
+    var box = $('comments');
+    if (!list.length) return;
+    box.textContent = '';
+    list.forEach(function (c) {
+      var item = el('article', 'comment');
+      item.appendChild(el('p', 'who', '🙏 ' + c.name + (c.date ? ' · ' + niceDate(c.date) : '')));
+      item.appendChild(el('p', 'words', c.message));
+      if (c.reply) {
+        var rep = el('div', 'reply');
+        rep.appendChild(el('b', null, 'పురాణోదయం: '));
+        rep.appendChild(document.createTextNode(c.reply));
+        item.appendChild(rep);
+      }
+      box.appendChild(item);
+    });
+  }
+
+  function renderContact(c) {
+    if (!c) return;
+    if (c.wa) {
+      $('wa-chat').href = 'https://wa.me/91' + c.wa + '?text=' +
+        encodeURIComponent('నమస్కారం 🙏 పురాణోదయం అన్నదానం గురించి అడగాలి: ');
+    }
+    $('wa-chat').hidden = !c.wa;
+    if (c.channel) $('wa-channel').href = c.channel;
+    $('wa-channel').hidden = !c.channel;
+    $('contact').hidden = !(c.wa || c.channel);
+  }
+
   function updateTotal() {
     var cost = settings().cost;
     var meals = Number($('p-meals').value) || 0;
@@ -307,6 +365,16 @@
       box.appendChild(el('p', 'contact', '📞 మీ వివరాలు సేవ్ అయ్యాయి. మేము మీకు ' + phone +
         ' కి కాల్ / WhatsApp చేస్తాము. ఇప్పుడు డబ్బు చెల్లించకండి. · Saved - we will call or WhatsApp you.'));
     }
+    var wa = feed && feed.contact && feed.contact.wa;
+    if (wa) {
+      var tell = el('a', 'btn-wa', 'WhatsApp లో మాకు తెలియజేయండి · Tell us on WhatsApp');
+      tell.target = '_blank';
+      tell.rel = 'noopener';
+      tell.href = 'https://wa.me/91' + wa + '?text=' + encodeURIComponent('నమస్కారం 🙏 నా అన్నదానం బుకింగ్ ' +
+        res.booking + ': ' + res.date + ', ' + res.meals + ' భోజనాలు' + (res.amount ? ', ₹' + res.amount : '') + '. ' +
+        (res.pay ? 'క్యాటరర్‌కు చెల్లిస్తున్నాను.' : 'దయచేసి నన్ను సంప్రదించండి.'));
+      box.appendChild(tell);
+    }
     box.appendChild(el('p', 'tiny', 'మీ బుకింగ్ నంబర్ ' + res.booking + ' గుర్తుంచుకోండి. పూర్తి చెల్లింపు అందిన తర్వాతే మీ రోజున భోజనం అందిస్తాము.'));
     var again = el('button', 'btn-light', 'ఇంకో బుకింగ్ · Book again');
     again.type = 'button';
@@ -347,6 +415,50 @@
     pay.appendChild(el('p', 'tiny', 'పూర్తి మొత్తం ' + rupees(res.pay.amount) + ' చెల్లించండి. క్యాటరర్ నిర్ధారించిన తర్వాత ' +
       'మేము మీకు WhatsApp చేస్తాము, ఆ రోజు భోజనం అందిస్తాము. · Pay the full amount; we confirm on WhatsApp.'));
     return pay;
+  }
+
+  var CERR = {
+    empty: 'దయచేసి మీ పేరు రాయండి. · Please type your name.',
+    short: 'పేరు కనీసం 2 అక్షరాలు. · At least 2 letters.',
+    link: 'పేరులో లింకులు వద్దు. · No links in the name.',
+    digits: 'పేరులో నంబర్లు వద్దు. · No numbers in the name.',
+    message: 'మాటలో లింకులు, ఫోన్ నంబర్లు, ఈమెయిల్‌లు రాయకండి. · No links or phone numbers in the message.',
+    tooshort: 'దయచేసి కొంచెం ఎక్కువ రాయండి. · Please write a little more.',
+    phone: 'సరైన 10 అంకెల WhatsApp నంబర్ రాయండి. · Please type a 10-digit number.',
+    kind: 'ఎవరు చూడాలో ఎంచుకోండి. · Please choose who can see it.',
+    busy: 'కొద్దిసేపు ఆగి మళ్ళీ ప్రయత్నించండి. · Please try again in a minute.',
+    net: 'నెట్‌వర్క్ సమస్య - మళ్ళీ ప్రయత్నించండి. · Network problem, please try again.'
+  };
+
+  function onComment(ev) {
+    ev.preventDefault();
+    var form = ev.target;
+    var status = $('c-status');
+    var say = function (text, ok) { status.textContent = text; status.className = 'msg ' + (ok ? 'ok' : 'err'); };
+    var name = $('c-name').value.replace(/\s+/g, ' ').trim();
+    var text = $('c-text').value.replace(/\s+/g, ' ').trim();
+    var kind = form.querySelector('input[name="kind"]:checked');
+    if (!name) return say(CERR.empty, false);
+    if (Array.from(text).length < 3) return say(CERR.tooshort, false);
+    if (!kind) return say(CERR.kind, false);
+    var phone = kind.value === 'private' ? cleanPhone($('c-phone').value) : '';
+    if (kind.value === 'private' && !phone) return say(CERR.phone, false);
+    if (!API) return say(ERRORS.off, false);
+    var btn = $('c-btn');
+    btn.disabled = true;
+    fetch(API, { method: 'POST', body: JSON.stringify({ action: 'comment', name: name, message: text,
+      kind: kind.value, phone: phone, website: form.elements.website.value }) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res || !res.ok) return say(CERR[res && res.error] || CERR.net, false);
+        say(kind.value === 'private'
+          ? '🙏 ధన్యవాదాలు! మేము మీకు WhatsApp లో జవాబు ఇస్తాము. · We will reply on WhatsApp.'
+          : '🙏 ధన్యవాదాలు! మా ఆమోదం తర్వాత మీ మాట ఇక్కడ కనిపిస్తుంది. · It appears after we approve it.', true);
+        form.reset();
+        $('c-phone-box').hidden = true;
+      })
+      .catch(function () { say(CERR.net, false); })
+      .then(function () { btn.disabled = false; });
   }
 
   function onSubmit(ev) {
@@ -401,6 +513,10 @@
   // ---------------------------------------------------------------- start
   function start() {
     $('pledge-form').addEventListener('submit', onSubmit);
+    $('comment-form').addEventListener('submit', onComment);
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="kind"]'), function (r) {
+      r.addEventListener('change', function () { $('c-phone-box').hidden = this.value !== 'private'; });
+    });
     $('p-meals').addEventListener('input', updateTotal);
     $('p-occasion').addEventListener('change', function () {
       $('p-occasion-other').hidden = this.value !== 'other';

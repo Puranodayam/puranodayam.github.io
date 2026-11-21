@@ -115,6 +115,7 @@
     renderGrowth(feed.growth);
     renderVideos(feed.videos);
     renderAnnadanam(feed.annadanam);
+    renderContact(feed.contact);
     if (feed.updated) {
       var t = new Date(feed.updated);
       $('updated').textContent = 'చివరి అప్‌డేట్: ' +
@@ -211,6 +212,11 @@
     var latestLine = $('a-latest');
     latestLine.hidden = !latest;
     latestLine.textContent = latest ? '✅ చివరి అన్నదానం: ' + niceDate(latest.date) + ' - ' + latest.served + ' భోజనాలు' : '';
+    var rv = a.reviews;
+    var rvLine = $('a-reviews');
+    rvLine.hidden = !(rv && rv.count > 0);
+    rvLine.textContent = rv && rv.count > 0
+      ? (rv.avg ? '⭐ ' + rv.avg + ' / 5 · ' : '') + rv.count + ' దాతల అభిప్రాయాలు' : '';
     var photos = $('a-photos');
     photos.textContent = '';
     ((latest && latest.photos) || []).forEach(function (id) {
@@ -224,6 +230,21 @@
       link.appendChild(img);
       photos.appendChild(link);
     });
+  }
+
+  /** WhatsApp chat (seva number) + Channel buttons, only when you filled them in the Annadanam settings tab. */
+  function renderContact(c) {
+    if (!c) return;
+    var chat = $('wa-chat');
+    var channel = $('wa-channel');
+    if (c.wa) {
+      chat.href = 'https://wa.me/91' + c.wa + '?text=' +
+        encodeURIComponent('నమస్కారం 🙏 పురాణోదయం గురించి అడగాలి: ');
+    }
+    chat.hidden = !c.wa;
+    if (c.channel) channel.href = c.channel;
+    channel.hidden = !c.channel;
+    $('contact').hidden = !(c.wa || c.channel);
   }
 
   function renderSupporters(sup, scans) {
